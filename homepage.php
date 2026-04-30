@@ -1,167 +1,394 @@
 <?php
 session_start();
 
-// Protect this page — redirect to login if not logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php?error=Please log in to access this page.');
+if(!isset($_SESSION['email'])){
+    header("Location: login.php");
     exit();
 }
-
-$user_name = $_SESSION['user_name'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNQ. — Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    :root {
-      --bg: #0d0d0d;
-      --card: #161616;
-      --border: #2a2a2a;
-      --accent: #c8f135;
-      --accent-dim: rgba(200,241,53,0.12);
-      --text: #f0f0f0;
-      --muted: #888;
-    }
+        body {
+            min-height: 100vh;
+            background-color: #000000;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
 
-    body {
-      background: var(--bg);
-      min-height: 100vh;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-    }
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
 
-    body::before {
-      content: '';
-      position: fixed;
-      top: -150px; left: -150px;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(200,241,53,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
+        .brand {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 3px;
+        }
 
-    nav {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.2rem 2.5rem;
-      border-bottom: 1px solid var(--border);
-      background: rgba(22,22,22,0.8);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
 
-    .logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-    }
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: color 0.3s ease;
+        }
 
-    .nav-right {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-    }
+        .nav-links a:hover {
+            color: white;
+        }
 
-    .nav-greeting {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
 
-    .nav-greeting span {
-      color: var(--text);
-      font-weight: 500;
-    }
+        .user-email {
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 12px;
+        }
 
-    .logout-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.45rem 1rem;
-      border-radius: 8px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.85rem;
-      cursor: pointer;
-      text-decoration: none;
-      transition: border-color 0.2s, color 0.2s;
-    }
+        .btn-logout {
+            padding: 8px 20px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
 
-    .logout-btn:hover {
-      border-color: #ff5f5f;
-      color: #ff5f5f;
-    }
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
 
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 6rem 2rem;
-      animation: fadeUp 0.6s ease both;
-    }
+        /* HERO VERSE SECTION */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 80px 40px;
+            position: relative;
+            overflow: hidden;
+        }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+        /* The glow behind the verse */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
 
-    .badge {
-      display: inline-block;
-      background: var(--accent-dim);
-      color: var(--accent);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.9rem;
-      border-radius: 100px;
-      margin-bottom: 1.5rem;
-    }
+        .cross {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 4px;
+            margin-bottom: 32px;
+        }
 
-    h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 800;
-      line-height: 1.05;
-      margin-bottom: 1rem;
-    }
+        .verse-card {
+            max-width: 680px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 48px 52px;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
 
-    h1 span { color: var(--accent); }
+        .verse-label {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 24px;
+            text-transform: uppercase;
+        }
 
-    .sub {
-      color: var(--muted);
-      font-size: 1.1rem;
-      max-width: 480px;
-      line-height: 1.6;
-    }
-  </style>
+        .verse-text {
+            font-size: 22px;
+            font-weight: 300;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+            font-style: italic;
+            margin-bottom: 24px;
+        }
+
+        .verse-ref {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        /* DIVIDER */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 40px;
+            margin-bottom: 32px;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .divider-text {
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.2);
+            text-transform: uppercase;
+        }
+
+        /* USERS TABLE SECTION */
+        .table-section {
+            padding: 0 40px 60px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        .btn-add {
+            padding: 8px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            color: white;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* TABLE */
+        .table-wrapper {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        thead th {
+            padding: 16px 20px;
+            text-align: left;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        tbody td {
+            padding: 16px 20px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* ACTION BUTTONS */
+        .btn-edit {
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 50px;
+            color: white;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-decoration: none;
+            margin-right: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-delete {
+            padding: 6px 16px;
+            background: rgba(255, 60, 60, 0.1);
+            border: 1px solid rgba(255, 60, 60, 0.2);
+            border-radius: 50px;
+            color: rgba(255, 100, 100, 0.9);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 60, 60, 0.2);
+        }
+
+        .no-users {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 13px;
+            letter-spacing: 2px;
+        }
+    </style>
 </head>
+
 <body>
 
-  <nav>
-    <div class="logo">MyApp</div>
-    <div class="nav-right">
-      <p class="nav-greeting">Hello, <span><?php echo htmlspecialchars($user_name); ?></span></p>
-      <a href="logout.php" class="logout-btn">Log out</a>
-    </div>
-  </nav>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="brand">SYNQ.</div>
+        <div class="nav-links">
+            <a href="homepage.php">HOME</a>
+            <a href="read.php">USERS</a>
+        </div>
+        <div class="nav-right">
+            <span class="user-email"><?php echo $_SESSION['email']; ?></span>
+            <a href="logout.php" class="btn-logout">LOGOUT</a>
+        </div>
+    </nav>
 
-  <section class="hero">
-    <div class="badge">You're in</div>
-    <h1>Welcome back,<br/><span><?php echo htmlspecialchars($user_name); ?></span></h1>
-    <p class="sub">You're successfully logged in. This is your homepage — we'll build it out together soon.</p>
-  </section>
+    <!-- VERSE SECTION -->
+    <section class="hero">
+        <div class="cross">✝</div>
+        <div class="verse-card">
+            <div class="verse-label">Verse of the Day</div>
+            <div class="verse-text">
+                "For I know the plans I have for you, declares the Lord,
+                plans to prosper you and not to harm you,
+                plans to give you hope and a future."
+            </div>
+            <div class="verse-ref">JEREMIAH 29:11</div>
+        </div>
+    </section>
+
+    <!-- DIVIDER -->
+    <div class="divider">
+        <div class="divider-line"></div>
+        <div class="divider-text">Community</div>
+        <div class="divider-line"></div>
+    </div>
+
+    <!-- USERS TABLE -->
+    <section class="table-section">
+        <div class="section-header">
+            <span class="section-title">Registered Users</span>
+            <a href="signup.html" class="btn-add">+ ADD USER</a>
+        </div>
+
+        <div class="table-wrapper">
+            <?php
+            include 'connection.php';
+            $sql = "SELECT * FROM users";
+            $result = $conn->query($sql);
+
+            if ($result->num_rows > 0): ?>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Gender</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php while ($row = $result->fetch_assoc()): ?>
+                            <tr>
+                                <td><?php echo $row['id']; ?></td>
+                                <td><?php echo $row['fname']; ?></td>
+                                <td><?php echo $row['lname']; ?></td>
+                                <td><?php echo $row['email']; ?></td>
+                                <td><?php echo $row['gender']; ?></td>
+                                <td>
+                                    <a href="update.php?id=<?php echo $row['id']; ?>" class="btn-edit">EDIT</a>
+                                    <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn-delete">DELETE</a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    </tbody>
+                </table>
+            <?php else: ?>
+                <div class="no-users">NO USERS FOUND</div>
+            <?php endif; ?>
+        </div>
+    </section>
 
 </body>
+
 </html>
