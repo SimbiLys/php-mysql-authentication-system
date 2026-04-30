@@ -6,7 +6,6 @@ if(isset($_POST['submit'])){
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Prepared statement (SAFE)
     $sql = "SELECT * FROM users WHERE email = ?";
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $email);
@@ -16,10 +15,9 @@ if(isset($_POST['submit'])){
     if($result->num_rows > 0){
         $user = $result->fetch_assoc();
 
-        // Verify hashed password
         if(password_verify($password, $user['password'])){
             $_SESSION['email'] = $email;
-            header("Location: homepage.php");
+            header('Location: homepage.php');
             exit();
         } else {
             $error = "Invalid email or password.";
