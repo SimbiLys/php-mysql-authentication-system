@@ -1,259 +1,256 @@
+<?php
+include 'connection.php';
+
+if(isset($_POST['submit'])){
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+
+    // Hash password
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    // Insert safely
+    $sql = "INSERT INTO users (email, password) VALUES (?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $email, $hashed_password);
+
+    if($stmt->execute()){
+        header("Location: login.php");
+        exit();
+    } else {
+        $error = "Something went wrong.";
+    }
+
+    $stmt->close();
+    $conn->close();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYNQ-Sign Up</title>
+    <style>
+        /* This resets all default browser spacing and makes
+        box sizes include padding in their width */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    :root {
-      --bg: #0d0d0d;
-      --card: #161616;
-      --border: #2a2a2a;
-      --accent: #c8f135;
-      --accent-dim: rgba(200,241,53,0.12);
-      --text: #f0f0f0;
-      --muted: #888;
-      --error: #ff5f5f;
-    }
+        /* The full page background - pure black and centered */
+        body {
+            min-height: 100vh;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
 
-    body {
-      background: var(--bg);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'DM Sans', sans-serif;
-      color: var(--text);
-      padding: 2rem;
-    }
+        /* The glowing background blobs behind the card */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
 
-    body::before {
-      content: '';
-      position: fixed;
-      top: -200px; left: -200px;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(200,241,53,0.07) 0%, transparent 70%);
-      pointer-events: none;
-    }
+        /* The glass card */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 24px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 420px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
 
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 3rem 2.5rem;
-      width: 100%;
-      max-width: 440px;
-      position: relative;
-      animation: fadeUp 0.5s ease both;
-    }
+        /* The brand name at the top */
+        .brand {
+            font-size: 18px;
+            font-weight: 800;
+            color: white;
+            letter-spacing: 2px;
+            margin-bottom: 32px;
+        }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+        /* The welcome text */
+        .welcome h2 {
+            color: white;
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
 
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 50%;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    }
+        .welcome p {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 13px;
+            margin-bottom: 28px;
+        }
 
-    .tag {
-      display: inline-block;
-      background: var(--accent-dim);
-      color: var(--accent);
-      font-family: 'Syne', sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.8rem;
-      border-radius: 100px;
-      margin-bottom: 1.2rem;
-    }
+        /* Each input group - label + input stacked */
+        .input-group {
+            margin-bottom: 16px;
+        }
 
-    h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 2rem;
-      font-weight: 800;
-      line-height: 1.1;
-      margin-bottom: 0.4rem;
-    }
+        .input-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
 
-    h1 span { color: var(--accent); }
+        /* The pill shaped inputs */
+        .input-group input {
+            width: 100%;
+            padding: 14px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
 
-    .subtitle {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
-    }
+        /* Input glows slightly when you click on it */
+        .input-group input:focus {
+            border-color: rgba(255, 255, 255, 0.4);
+        }
 
-    .form-group {
-      margin-bottom: 1.2rem;
-    }
+        /* Placeholder text color */
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
 
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--muted);
-      margin-bottom: 0.45rem;
-      letter-spacing: 0.03em;
-    }
+        /* Gender radio buttons row */
+        .gender-group {
+            margin-bottom: 16px;
+        }
 
-    input {
-      width: 100%;
-      background: #1e1e1e;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.8rem 1rem;
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      font-size: 0.95rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      outline: none;
-    }
+        .gender-group label.title {
+            display: block;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
 
-    input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(200,241,53,0.1);
-    }
+        .gender-options {
+            display: flex;
+            gap: 16px;
+        }
 
-    input::placeholder { color: #444; }
+        .gender-options label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
 
-    .hint {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 0.3rem;
-    }
+        /* The sign up button */
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.3s ease;
+        }
 
-    .error-msg {
-      display: none;
-      font-size: 0.75rem;
-      color: var(--error);
-      margin-top: 0.3rem;
-    }
+        /* Button gets slightly brighter on hover */
+        .btn-submit:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
 
-    .btn {
-      width: 100%;
-      background: var(--accent);
-      color: #0d0d0d;
-      border: none;
-      border-radius: 10px;
-      padding: 0.9rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 0.8rem;
-      transition: opacity 0.2s, transform 0.15s;
-      letter-spacing: 0.03em;
-    }
+        /* The login link at the bottom */
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
 
-    .btn:hover { opacity: 0.88; transform: translateY(-1px); }
-    .btn:active { transform: translateY(0); }
-
-    .footer {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-
-    .footer a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .footer a:hover { text-decoration: underline; }
-
-    /* PHP error/success message styles */
-    .alert {
-      padding: 0.8rem 1rem;
-      border-radius: 10px;
-      margin-bottom: 1.2rem;
-      font-size: 0.88rem;
-    }
-    .alert-error { background: rgba(255,95,95,0.12); color: var(--error); border: 1px solid rgba(255,95,95,0.3); }
-    .alert-success { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(200,241,53,0.3); }
-  </style>
+        .login-link a {
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+        }
+    </style>
 </head>
+
 <body>
-  <div class="card">
-    <div class="tag">Create Account</div>
-    <h1>Join <span>us</span> today</h1>
-    <p class="subtitle">Fill in your details to get started.</p>
 
-    <?php
-    // Show PHP messages if redirected back with a message
-    if (isset($_GET['error'])) {
-        echo '<div class="alert alert-error">' . htmlspecialchars($_GET['error']) . '</div>';
-    }
-    if (isset($_GET['success'])) {
-        echo '<div class="alert alert-success">' . htmlspecialchars($_GET['success']) . '</div>';
-    }
-    ?>
+    <div class="card">
+        <div class="brand">SYNQ.</div>
 
-    <form action="create.php" method="POST" id="signupForm">
-      <div class="form-group">
-        <label for="fullname">Full Name</label>
-        <input type="text" id="fullname" name="fullname" placeholder="e.g. Jane Doe" required />
-      </div>
+        <div class="welcome">
+            <h2>Create account,</h2>
+            <p>please enter your details.</p>
+        </div>
 
-      <div class="form-group">
-        <label for="email">Email Address</label>
-        <input type="email" id="email" name="email" placeholder="you@example.com" required />
-      </div>
+        <form action="create.php" method="POST">
 
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" placeholder="Min. 6 characters" required />
-        <p class="hint">At least 6 characters.</p>
-      </div>
+            <div class="input-group">
+                <label>First Name</label>
+                <input type="text" name="fname" placeholder="first name">
+            </div>
 
-      <div class="form-group">
-        <label for="confirm_password">Confirm Password</label>
-        <input type="password" id="confirm_password" name="confirm_password" placeholder="Repeat your password" required />
-        <p class="error-msg" id="matchError">Passwords do not match.</p>
-      </div>
+            <div class="input-group">
+                <label>Last Name</label>
+                <input type="text" name="lname" placeholder="last name">
+            </div>
 
-      <button type="submit" class="btn">Create Account</button>
-    </form>
+            <div class="input-group">
+                <label>Email ID</label>
+                <input type="email" name="email" placeholder="you@example.com">
+            </div>
 
-    <div class="footer">
-      Already have an account? <a href="login.php">Log in</a>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="••••••••">
+            </div>
+
+            <div class="gender-group">
+                <label class="title">Gender</label>
+                <div class="gender-options">
+                    <label>
+                        <input type="radio" name="gender" value="Male"> Male
+                    </label>
+                    <label>
+                        <input type="radio" name="gender" value="Female"> Female
+                    </label>
+                </div>
+            </div>
+
+            <button type="submit" name="submit" class="btn-submit">SIGN UP</button>
+
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="login.php">Sign in</a>
+        </div>
     </div>
-  </div>
 
-  <script>
-    const form = document.getElementById('signupForm');
-    const pw = document.getElementById('password');
-    const cpw = document.getElementById('confirm_password');
-    const matchErr = document.getElementById('matchError');
-
-    form.addEventListener('submit', function(e) {
-      if (pw.value !== cpw.value) {
-        e.preventDefault();
-        matchErr.style.display = 'block';
-        cpw.focus();
-      } else {
-        matchErr.style.display = 'none';
-      }
-    });
-
-    cpw.addEventListener('input', function() {
-      if (pw.value === cpw.value) {
-        matchErr.style.display = 'none';
-      }
-    });
-  </script>
 </body>
+
 </html>
